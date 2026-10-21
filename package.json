@@ -14,7 +14,7 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
     "@astrojs/tailwind": "^5.1.5",
-    "astro": "^7.4.0",
+    "astro": "^5.18.2",
     "autoprefixer": "^10.6.1",
     "hls.js": "^1.7.3",
     "plyr": "^3.8.5",
