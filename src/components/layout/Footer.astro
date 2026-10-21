@@ -1,0 +1,108 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-ink-soft border-t border-ink-700/60 mt-auto text-white/70">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
+			<!-- Col 1: Brand Info (2 cols wide on desktop) -->
+			<div class="lg:col-span-2 space-y-4">
+				<a href="/" class="flex items-center gap-2.5">
+					<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-red via-brand-orange to-brand-gold flex items-center justify-center shadow-glow">
+						<svg class="w-4 h-4 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M8 5v14l11-7z" />
+						</svg>
+					</div>
+					<span class="text-xl font-extrabold tracking-tight text-white font-display">
+						Reality<span class="bg-gradient-to-r from-brand-orange via-brand-orange-soft to-brand-red bg-clip-text text-transparent">Stream</span>
+					</span>
+				</a>
+				<p class="text-sm text-white/60 leading-relaxed max-w-sm">
+					Your premier streaming portal for the biggest Indian reality TV shows. Watch Bigg Boss, MTV Roadies, Splitsvilla, Indian Idol, and more with high-definition streaming and instant access.
+				</p>
+				<div class="flex items-center gap-3 pt-2">
+					<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-ink-700 text-brand-orange text-xs font-semibold border border-ink-600">
+						<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+						Servers Online
+					</span>
+					<span class="text-xs text-white/40">Updated Daily</span>
+				</div>
+			</div>
+
+			<!-- Col 2: Navigation -->
+			<div>
+				<h3 class="text-xs font-semibold uppercase tracking-wider text-white mb-4">
+					Explore
+				</h3>
+				<ul class="space-y-2.5 text-sm">
+					<li>
+						<a href="/" class="hover:text-brand-orange transition">Home</a>
+					</li>
+					<li>
+						<a href="/shows" class="hover:text-brand-orange transition">All Shows</a>
+					</li>
+					<li>
+						<a href="/episodes" class="hover:text-brand-orange transition">Latest Episodes</a>
+					</li>
+					<li>
+						<a href="/shows?filter=trending" class="hover:text-brand-orange transition">Trending Now</a>
+					</li>
+					<li>
+						<a href="/search" class="hover:text-brand-orange transition">Search Catalog</a>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Col 3: Company & Support -->
+			<div>
+				<h3 class="text-xs font-semibold uppercase tracking-wider text-white mb-4">
+					Company
+				</h3>
+				<ul class="space-y-2.5 text-sm">
+					<li>
+						<a href="/about" class="hover:text-brand-orange transition">About Us</a>
+					</li>
+					<li>
+						<a href="/contact" class="hover:text-brand-orange transition">Contact Support</a>
+					</li>
+					<li>
+						<a href="/disclaimer" class="hover:text-brand-orange transition">Disclaimer</a>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Col 4: Legal & Policy -->
+			<div>
+				<h3 class="text-xs font-semibold uppercase tracking-wider text-white mb-4">
+					Legal & Policy
+				</h3>
+				<ul class="space-y-2.5 text-sm">
+					<li>
+						<a href="/dmca" class="hover:text-brand-orange transition">DMCA Notice</a>
+					</li>
+					<li>
+						<a href="/privacy" class="hover:text-brand-orange transition">Privacy Policy</a>
+					</li>
+					<li>
+						<a href="/disclaimer" class="hover:text-brand-orange transition">Terms of Service</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- Disclaimer Box -->
+		<div class="p-4 rounded-xl bg-ink/70 border border-ink-700/60 mb-8 text-xs text-white/50 leading-relaxed">
+			<p>
+				<strong class="text-white/70">Content Disclaimer:</strong> RealityStream is an online content indexing and streaming information platform. We do not host or store any media files on our web servers. All video streams and playlists are indexed from publicly available third-party platforms and content delivery networks. For takedown requests or intellectual property claims, please review our <a href="/dmca" class="text-brand-orange underline hover:text-brand-orange-soft">DMCA Policy</a>.
+			</p>
+		</div>
+
+		<!-- Bottom Copyright Bar -->
+		<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-ink-700/40 text-xs text-white/50">
+			<p>© {currentYear} RealityStream. All rights reserved.</p>
+			<p class="flex items-center gap-1">
+				Built with <span class="text-brand-red">♥</span> for Indian Reality TV Fans
+			</p>
+		</div>
+	</div>
+</footer>

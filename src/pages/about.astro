@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/ui/AdSlot.astro';
+import Button from '../components/ui/Button.astro';
+---
+
+<Layout title="About RealityStream - Our Story" description="Learn about RealityStream, our mission to bring the best Indian reality shows to viewers worldwide.">
+	<section class="py-16 sm:py-20 bg-ink-soft/20">
+		<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="text-center mb-12">
+				<h1 class="text-4xl sm:text-5xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+					About RealityStream
+				</h1>
+				<p class="text-white/70 text-lg mt-4 max-w-2xl mx-auto">
+					RealityStream is your ultimate destination for premium Indian reality entertainment. We bring you the latest episodes, exclusive clips, and behind-the-scenes content from your favorite shows like Bigg Boss, Roadies, Splitsvilla, and more.
+				</p>
+			</div>
+
+			<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+				<div class="bg-ink/50 rounded-xl p-6">
+					<h3 class="text-2xl font-bold text-white mb-4" style="font-family: 'Poppins', sans-serif;">
+						Our Mission
+					</h3>
+					<p class="text-white/60">
+						To provide seamless, high-quality streaming of Indian reality shows with minimal ads and maximum entertainment value.
+					</p>
+				</div>
+				<div class="bg-ink/50 rounded-xl p-6">
+					<h3 class="text-2xl font-bold text-white mb-4" style="font-family: 'Poppins', sans-serif;">
+						What We Offer
+					</h3>
+					<ul class="list-disc list-inside space-y-2 text-white/60">
+						<li>Latest episodes of top reality shows</li>
+						<li>Full season archives</li>
+						<li>Exclusive behind-the-scenes content</li>
+						<li>High-definition streaming</li>
+						<li>Mobile-friendly experience</li>
+					</ul>
+				</div>
+				<div class="bg-ink/50 rounded-xl p-6">
+					<h3 class="text-2xl font-bold text-white mb-4" style="font-family: 'Poppins', sans-serif;">
+						Our Commitment
+					</h3>
+					<p class="text-white/60">
+						We're committed to delivering the best reality TV experience while respecting content creators and supporting the entertainment industry.
+					</p>
+				</div>
+			</div>
+
+			<div class="mt-16 text-center">
+				<Button href="/contact/" variant="primary" size="lg">
+					Contact Us
+				</Button>
+			</div>
+
+			<!-- Ad slot -->
+			<div class="mt-12">
+				<AdSlot
+					id="about-page-ad"
+					label="About Page Banner"
+					placement="between-lists"
+					width="max-w-4xl mx-auto"
+				/>
+			</div>
+		</div>
+	</section>
+</Layout>

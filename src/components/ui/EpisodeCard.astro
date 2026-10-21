@@ -1,0 +1,84 @@
+---
+import { formatDate } from '../../utils/videoHelpers';
+
+interface Props {
+	showSlug: string;
+	seasonSlug: string;
+	seasonNumber: number;
+	episodeNumber: number;
+	title: string;
+	poster: string;
+	posterAlt?: string;
+	description?: string;
+	releaseDate: Date;
+	featured?: boolean;
+	class?: string;
+}
+
+const {
+	showSlug,
+	seasonSlug,
+	seasonNumber,
+	episodeNumber,
+	title,
+	poster,
+	posterAlt = title,
+	description,
+	releaseDate,
+	featured,
+	class: className = '',
+} = Astro.props as Props;
+
+const watchSlug = `${showSlug}-season-${seasonNumber}-episode-${episodeNumber}`;
+---
+
+<a
+	href={`/watch/${watchSlug}`}
+	class={`group relative block overflow-hidden rounded-xl bg-ink-soft card-lift border border-ink-700/60 hover:border-brand-orange/60 ${className}`}
+	aria-label={`Watch ${title}`}
+>
+	<div class="aspect-video w-full overflow-hidden bg-ink-800 relative">
+		<img
+			src={poster}
+			alt={posterAlt}
+			loading="lazy"
+			decoding="async"
+			class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+		/>
+		<!-- Play button overlay on hover -->
+		<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40">
+			<div class="w-12 h-12 rounded-full bg-brand-orange text-black flex items-center justify-center shadow-glow transform scale-75 group-hover:scale-100 transition-transform">
+				<svg class="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M8 5v14l11-7z" />
+				</svg>
+			</div>
+		</div>
+	</div>
+	<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-90 transition group-hover:from-black pointer-events-none">
+		<div class="absolute left-0 top-0 flex h-full flex-col justify-between p-3">
+			<span class="w-fit rounded bg-brand-orange px-2 py-0.5 text-xs font-bold text-black shadow-sm">
+				EP {episodeNumber}
+			</span>
+		</div>
+		<div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+			<h3 class="line-clamp-1 text-sm font-bold text-white sm:text-base group-hover:text-brand-orange transition-colors">
+				{title}
+			</h3>
+			<div class="mt-1 flex items-center gap-2 text-xs text-white/70">
+				<span class="text-brand-orange/90 font-medium">Season {seasonNumber}</span>
+				<span>•</span>
+				<span>{formatDate(releaseDate)}</span>
+			</div>
+			{description ? (
+				<p class="mt-1 line-clamp-2 hidden text-xs text-white/60 sm:block">
+					{description}
+				</p>
+			) : null}
+		</div>
+	</div>
+	{featured ? (
+		<span class="absolute right-2 top-2 rounded bg-brand-red/90 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
+			★ Featured
+		</span>
+	) : null}
+</a>

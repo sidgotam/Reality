@@ -1,11 +1,49 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import HeroSection from '../components/sections/HeroSection.astro';
+import TrendingShows from '../components/sections/TrendingShows.astro';
+import LatestEpisodes from '../components/sections/LatestEpisodes.astro';
+import PopularShows from '../components/sections/PopularShows.astro';
+import AdSlot from '../components/ui/AdSlot.astro';
+import { getCollection } from 'astro:content';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const featuredShows = await getCollection('shows', ({ data }) => data.featured === true);
+const trendingShows = await getCollection('shows', ({ data }) => data.trending === true);
+const popularShows = await getCollection('shows');
+const allEpisodes = await getCollection('episodes');
+
+const latestEpisodes = [...allEpisodes].sort(
+  (a, b) => new Date(b.data.releaseDate).getTime() - new Date(a.data.releaseDate).getTime()
+);
+
+const heroShow = featuredShows[0] || popularShows[0];
+const heroSlug = heroShow?.data.slug;
+const latestEpisode = heroSlug
+  ? latestEpisodes.find((ep) => ep.data.showSlug === heroSlug)
+  : undefined;
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+  title="RealityStream - Watch Indian Reality Shows Online in HD"
+  description="Stream the latest full episodes of Bigg Boss, MTV Roadies, Splitsvilla, Indian Idol and more with high quality video and zero hassle."
+>
+  {heroShow && (
+    <HeroSection show={heroShow} latestEpisode={latestEpisode} />
+  )}
+
+  {trendingShows.length > 0 && <TrendingShows shows={trendingShows} />}
+
+  {latestEpisodes.length > 0 && <LatestEpisodes episodes={latestEpisodes.slice(0, 8)} />}
+
+  {popularShows.length > 0 && <PopularShows shows={popularShows} />}
+
+  <!-- Ad banner -->
+  <div class="py-12">
+    <AdSlot
+      id="homepage-below-fold"
+      label="Homepage Banner"
+      placement="between-lists"
+      width="max-w-7xl mx-auto"
+    />
+  </div>
 </Layout>

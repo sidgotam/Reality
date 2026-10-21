@@ -1,23 +1,93 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import '../styles/globals.css';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+
+interface Props extends HTMLAttributes<'html'> {
+	title: string;
+	description: string;
+	canonical?: string;
+	ogImage?: string;
+	ogType?: string;
+	schema?: string;
+	// When true, adds a noindex so search engines skip the page.
+	noindex?: boolean;
+}
+
+const {
+	title = 'RealityStream',
+	description = 'Watch the latest reality shows and episodes.',
+	canonical,
+	ogImage,
+	ogType = 'website',
+	schema,
+	noindex = false,
+	...rest
+} = Astro.props as Props;
+
+const fullTitle = title.includes('|') || title.includes('-') ? title : `${title} | RealityStream`;
+const siteName = 'RealityStream';
+const siteUrl = (import.meta.env.SITE_URL as string | undefined) || 'https://realityshows.example.com';
+const resolvedCanonical = canonical || `${siteUrl}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
+const resolvedOgImage = ogImage || `${siteUrl}/og-default.jpg`;
+---
+
 <!doctype html>
-<html lang="en">
+<html lang="en" {...rest}>
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="dns-prefetch" href="https://cloudflare.com" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+
+		<title>{fullTitle}</title>
+		<meta name="description" content={description} />
+		<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+		<link rel="canonical" href={resolvedCanonical} />
+
+		<!-- Open Graph / social sharing -->
+		<meta property="og:site_name" content={siteName} />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content={ogType} />
+		<meta property="og:url" content={resolvedCanonical} />
+		<meta property="og:image" content={resolvedOgImage} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:locale" content="en_IN" />
+
+		<!-- Twitter Card -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={fullTitle} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={resolvedOgImage} />
+
+		<!-- Cloudflare Web Analytics (configured via env, never hardcoded) -->
+		{import.meta.env.CLOUDFLARE_ANALYTICS_SITE_TOKEN && (
+			<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({
+				siteToken: import.meta.env.CLOUDFLARE_ANALYTICS_SITE_TOKEN,
+			})}></script>
+		)}
+
+		<!-- Structured data, only when the page provides it -->
+		{schema && (
+			<script type="application/ld+json" set:html={schema} />
+		)}
+
+		<!-- DNS prefetch for external domains used by the player -->
+		<link rel="dns-prefetch" href="https://video.example.com" />
 	</head>
-	<body>
-		<slot />
+	<body class="min-h-screen bg-ink text-white flex flex-col font-sans selection:bg-brand-orange selection:text-black">
+		<a href="#main-content" class="skip-link">Skip to content</a>
+		<Header />
+		<main id="main-content" class="flex-1">
+			<slot />
+		</main>
+		<Footer />
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

@@ -1,0 +1,247 @@
+---
+import LoadingSpinner from './LoadingSpinner.astro';
+
+interface Props {
+	sources: Array<{
+		type: 'hls' | 'mp4' | 'embed';
+		url: string;
+	}>;
+	poster: string;
+	title?: string;
+	class?: string;
+}
+
+const { sources, poster, title = 'Video Player', class: className = '' } = Astro.props as Props;
+const primarySource = sources && sources.length > 0 ? sources[0] : null;
+const isEmbed = Boolean(
+	primarySource &&
+	(primarySource.type === 'embed' ||
+	 primarySource.url.includes('videoembed') ||
+	 primarySource.url.includes('ok.ru') ||
+	 primarySource.url.includes('youtube.com/embed') ||
+	 primarySource.url.includes('player.vimeo.com') ||
+	 primarySource.url.includes('dailymotion.com/embed'))
+);
+---
+
+<div class={`relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-ink-700/80 group ${className}`}>
+	{isEmbed && primarySource ? (
+		<div class="w-full h-full relative bg-black">
+			<iframe
+				src={primarySource.url}
+				title={title}
+				class="w-full h-full border-0 rounded-2xl"
+				allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write"
+				allowfullscreen
+				loading="eager"
+			></iframe>
+		</div>
+	) : (
+		<>
+			<!-- Video Element -->
+			<video
+				id="player-video"
+				class="w-full h-full object-contain"
+				playsinline
+				crossorigin="anonymous"
+				preload="metadata"
+				poster={poster}
+				aria-label={title}
+				data-sources={JSON.stringify(sources)}
+			></video>
+
+			<!-- Loading Overlay -->
+			<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/85 z-20 transition-opacity duration-300 pointer-events-none" id="loading-overlay">
+				<LoadingSpinner size="lg" label="Loading video stream..." />
+				<p class="text-xs text-white/60 mt-3 font-medium">Connecting to stream...</p>
+			</div>
+
+			<!-- Error / Fallback Overlay -->
+			<div class="absolute inset-0 flex flex-col items-center justify-center bg-ink/95 z-20 hidden p-6 text-center" id="error-overlay">
+				<div class="w-14 h-14 rounded-2xl bg-brand-orange/20 text-brand-orange flex items-center justify-center mb-4 border border-brand-orange/30">
+					<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+					</svg>
+				</div>
+				<h3 class="text-xl font-bold text-white mb-2 font-display">Video Stream Offline</h3>
+				<p class="text-sm text-white/60 max-w-md mb-6 leading-relaxed">
+					The Cloudflare R2 video storage bucket is not configured in this environment, or the media stream is currently unavailable.
+				</p>
+				<div class="flex flex-wrap items-center justify-center gap-3">
+					<button
+						id="demo-stream-button"
+						type="button"
+						class="px-5 py-2.5 bg-brand-orange hover:bg-brand-orange-soft text-black font-bold text-sm rounded-xl transition shadow-glow active:scale-95 flex items-center gap-2"
+					>
+						<svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M8 5v14l11-7z" />
+						</svg>
+						Play Demo Test Stream (HLS)
+					</button>
+					<button
+						id="retry-button"
+						type="button"
+						class="px-4 py-2.5 bg-ink-700 hover:bg-ink-600 text-white font-semibold text-sm rounded-xl transition border border-ink-600 active:scale-95"
+					>
+						Retry Source
+					</button>
+				</div>
+			</div>
+		</>
+	)}
+</div>
+
+<script>
+	import Plyr from 'plyr';
+	import Hls from 'hls.js';
+
+	let player: Plyr | null = null;
+	let hls: Hls | null = null;
+
+	const initVideoPlayer = () => {
+		const video = document.getElementById('player-video') as HTMLVideoElement | null;
+		const loadingOverlay = document.getElementById('loading-overlay');
+		const errorOverlay = document.getElementById('error-overlay');
+		const retryButton = document.getElementById('retry-button');
+		const demoStreamButton = document.getElementById('demo-stream-button');
+
+		if (!video) return;
+
+		const showLoading = () => {
+			loadingOverlay?.classList.remove('hidden');
+			errorOverlay?.classList.add('hidden');
+		};
+
+		const hideLoading = () => {
+			loadingOverlay?.classList.add('hidden');
+		};
+
+		const showError = () => {
+			hideLoading();
+			errorOverlay?.classList.remove('hidden');
+		};
+
+		const hideError = () => {
+			errorOverlay?.classList.add('hidden');
+		};
+
+		const plyrControls: Plyr.Options = {
+			controls: [
+				'play-large',
+				'play',
+				'progress',
+				'current-time',
+				'duration',
+				'mute',
+				'volume',
+				'captions',
+				'settings',
+				'pip',
+				'airplay',
+				'fullscreen',
+			],
+			settings: ['quality', 'speed'],
+			speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
+			keyboard: { focused: true, global: false },
+		};
+
+		const loadStream = (url: string, type: 'hls' | 'mp4' = 'hls') => {
+			showLoading();
+			hideError();
+
+			if (hls) {
+				hls.destroy();
+				hls = null;
+			}
+			if (player) {
+				player.destroy();
+				player = null;
+			}
+
+			const isHls = type === 'hls' || url.includes('.m3u8');
+
+			if (isHls && Hls.isSupported()) {
+				hls = new Hls({
+					enableWorker: true,
+					lowLatencyMode: true,
+				});
+
+				hls.loadSource(url);
+				hls.attachMedia(video);
+
+				hls.on(Hls.Events.MANIFEST_PARSED, () => {
+					hideLoading();
+					player = new Plyr(video, plyrControls);
+				});
+
+				hls.on(Hls.Events.ERROR, (_event, data) => {
+					if (data.fatal) {
+						switch (data.type) {
+							case Hls.ErrorTypes.NETWORK_ERROR:
+								console.warn('Fatal network error in HLS:', data);
+								showError();
+								break;
+							case Hls.ErrorTypes.MEDIA_ERROR:
+								console.warn('Fatal media error, attempting recovery');
+								hls?.recoverMediaError();
+								break;
+							default:
+								hls?.destroy();
+								showError();
+								break;
+						}
+					}
+				});
+			} else if (video.canPlayType('application/vnd.apple.mpegurl') || !isHls) {
+				// Native Safari HLS or direct MP4
+				video.src = url;
+				player = new Plyr(video, plyrControls);
+
+				video.addEventListener('loadedmetadata', () => hideLoading(), { once: true });
+				video.addEventListener('canplay', () => hideLoading());
+				video.addEventListener('error', () => showError());
+			} else {
+				showError();
+			}
+
+			// Plyr events
+			video.addEventListener('playing', () => hideLoading());
+			video.addEventListener('waiting', () => showLoading());
+			video.addEventListener('error', () => showError());
+		};
+
+		// Parse sources from data attribute
+		const rawSources = video.dataset.sources;
+		let initialSources: Array<{ type: 'hls' | 'mp4'; url: string }> = [];
+		try {
+			if (rawSources) initialSources = JSON.parse(rawSources);
+		} catch (e) {
+			console.error('Failed to parse video sources:', e);
+		}
+
+		if (initialSources.length > 0) {
+			loadStream(initialSources[0].url, initialSources[0].type);
+		} else {
+			showError();
+		}
+
+		// Demo test stream button
+		demoStreamButton?.addEventListener('click', () => {
+			// MUX reliable test stream
+			loadStream('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', 'hls');
+		});
+
+		// Retry button
+		retryButton?.addEventListener('click', () => {
+			if (initialSources.length > 0) {
+				loadStream(initialSources[0].url, initialSources[0].type);
+			}
+		});
+	};
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initVideoPlayer);
+	} else {
+		initVideoPlayer();
+	}
+</script>

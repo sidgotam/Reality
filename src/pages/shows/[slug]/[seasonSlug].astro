@@ -1,0 +1,150 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getCollection, getEntry } from 'astro:content';
+import EpisodeCard from '../../../components/ui/EpisodeCard.astro';
+import AdSlot from '../../../components/ui/AdSlot.astro';
+
+export async function getStaticPaths() {
+	const seasons = await getCollection('seasons');
+	return seasons.map((season) => ({
+		params: {
+			slug: season.data.showSlug,
+			seasonSlug: season.data.seasonSlug,
+		},
+		props: { season },
+	}));
+}
+
+const { slug: showSlug, seasonSlug } = Astro.params;
+const { season } = Astro.props;
+const seasonData = season.data;
+
+let showEntry = await getEntry('shows', showSlug!);
+if (!showEntry) {
+	const allShows = await getCollection('shows');
+	showEntry = allShows.find((s) => s.data.slug === showSlug);
+}
+const showData = showEntry?.data || {
+	name: seasonData.showName,
+	slug: showSlug,
+	poster: seasonData.poster || '',
+	description: '',
+	seasons: 1,
+	trending: false,
+	featured: false,
+};
+
+const episodes = (await getCollection(
+	'episodes',
+	({ data }) => data.showSlug === showSlug && data.seasonSlug === seasonSlug
+)).sort((a, b) => a.data.episodeNumber - b.data.episodeNumber);
+---
+
+<Layout
+	title={`${showData.name} Season ${seasonData.seasonNumber} - RealityStream`}
+	description={`Watch all episodes of ${showData.name} Season ${seasonData.seasonNumber} in HD on RealityStream. ${seasonData.description || ''}`}
+	ogImage={seasonData.poster || showData.poster}
+>
+	<section class="py-12 sm:py-16 bg-gradient-to-b from-ink-soft/60 to-ink">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<!-- Breadcrumb -->
+			<nav class="flex items-center gap-2 text-xs text-white/50 mb-8" aria-label="Breadcrumb">
+				<a href="/" class="hover:text-white transition">Home</a>
+				<span>/</span>
+				<a href="/shows" class="hover:text-white transition">Shows</a>
+				<span>/</span>
+				<a href={`/shows/${showSlug}`} class="hover:text-white transition">{showData.name}</a>
+				<span>/</span>
+				<span class="text-brand-orange font-semibold">Season {seasonData.seasonNumber}</span>
+			</nav>
+
+			<!-- Header -->
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start mb-12">
+				<div class="md:col-span-4 lg:col-span-3">
+					<div class="aspect-[2/3] w-full rounded-2xl overflow-hidden shadow-2xl border border-ink-700/60 bg-ink-800">
+						<img
+							src={seasonData.poster || showData.poster}
+							alt={`${showData.name} Season ${seasonData.seasonNumber} poster`}
+							class="w-full h-full object-cover"
+							loading="eager"
+						/>
+					</div>
+				</div>
+
+				<div class="md:col-span-8 lg:col-span-9 space-y-4">
+					<div class="flex items-center gap-2">
+						<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-orange/20 text-brand-orange text-xs font-bold border border-brand-orange/40">
+							Season {seasonData.seasonNumber}
+						</span>
+						<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-ink-700 text-white/70 text-xs font-medium border border-ink-600">
+							{episodes.length} {episodes.length === 1 ? 'Episode' : 'Episodes'}
+						</span>
+					</div>
+
+					<h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-display">
+						{showData.name}: Season {seasonData.seasonNumber}
+					</h1>
+
+					{seasonData.description && (
+						<p class="text-white/80 text-base sm:text-lg leading-relaxed max-w-3xl">
+							{seasonData.description}
+						</p>
+					)}
+
+					<div class="pt-2">
+						<a
+							href={`/shows/${showSlug}`}
+							class="inline-flex items-center gap-2 text-sm text-brand-orange hover:text-brand-orange-soft transition font-medium"
+						>
+							← Back to {showData.name} Overview
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- Episodes Grid -->
+			<div class="border-t border-ink-700/60 pt-10">
+				<div class="flex items-center justify-between mb-8">
+					<h2 class="text-2xl sm:text-3xl font-bold text-white font-display">
+						Season {seasonData.seasonNumber} Episodes
+					</h2>
+					<span class="text-xs text-white/50">{episodes.length} Episodes available</span>
+				</div>
+
+				{episodes.length > 0 ? (
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+						{episodes.map((episode) => (
+							<EpisodeCard
+								showSlug={episode.data.showSlug}
+								seasonSlug={episode.data.seasonSlug}
+								seasonNumber={episode.data.seasonNumber}
+								episodeNumber={episode.data.episodeNumber}
+								title={episode.data.title}
+								poster={episode.data.poster}
+								posterAlt={episode.data.posterAlt}
+								description={episode.data.description}
+								releaseDate={episode.data.releaseDate}
+								featured={episode.data.featured}
+							/>
+						))}
+					</div>
+				) : (
+					<div class="text-center py-16 bg-ink-soft/30 rounded-2xl border border-ink-700/50">
+						<p class="text-lg text-white/70 font-semibold mb-1">No episodes available</p>
+						<p class="text-sm text-white/50">Episodes for this season have not been uploaded yet.</p>
+					</div>
+				)}
+			</div>
+
+			<!-- Ad slot -->
+			<div class="mt-16">
+				<AdSlot
+					id="season-detail-below-content"
+					label="Season Detail Banner"
+					placement="between-lists"
+					width="max-w-7xl mx-auto"
+				/>
+			</div>
+		</div>
+	</section>
+</Layout>

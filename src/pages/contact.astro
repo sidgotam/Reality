@@ -1,0 +1,120 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/ui/AdSlot.astro';
+import Button from '../components/ui/Button.astro';
+---
+
+<Layout title="Contact RealityStream - Get in Touch" description="Contact RealityStream for support, feedback, or business inquiries.">
+	<section class="py-16 sm:py-20 bg-ink-soft/20">
+		<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="text-center mb-10">
+				<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-orange/20 text-brand-orange text-xs font-bold mb-3 border border-brand-orange/30">
+					<span>📬 We're here to help</span>
+				</div>
+				<h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-display">
+					Contact RealityStream
+				</h1>
+				<p class="text-white/60 text-base sm:text-lg mt-3 max-w-xl mx-auto">
+					Have questions about a show, playback feedback, DMCA notices, or business partnerships? Send us a message.
+				</p>
+			</div>
+
+			<div id="contact-success" class="hidden mb-8 p-6 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-center animate-fade-in">
+				<div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-3">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+					</svg>
+				</div>
+				<h3 class="text-lg font-bold text-white mb-1">Message Sent Successfully!</h3>
+				<p class="text-sm text-emerald-200/80">Thank you for reaching out. Our support team typically responds within 24 to 48 hours.</p>
+			</div>
+
+			<form id="contact-form" class="space-y-6 bg-ink-soft/50 p-6 sm:p-8 rounded-2xl border border-ink-700/60 shadow-card">
+				<div>
+					<label class="block text-sm font-medium text-white mb-2" for="name">
+						Your Name
+					</label>
+					<input
+						type="text"
+						id="name"
+						name="name"
+						required
+						class="w-full px-4 py-3 bg-ink-700/70 border border-ink-600 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition"
+						placeholder="e.g. Rahul Sharma"
+					/>
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-white mb-2" for="email">
+						Email Address
+					</label>
+					<input
+						type="email"
+						id="email"
+						name="email"
+						required
+						class="w-full px-4 py-3 bg-ink-700/70 border border-ink-600 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition"
+						placeholder="name@example.com"
+					/>
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-white mb-2" for="subject">
+						Subject
+					</label>
+					<select
+						id="subject"
+						name="subject"
+						required
+						class="w-full px-4 py-3 bg-ink-700/70 border border-ink-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition"
+					>
+						<option value="" disabled selected>Select an inquiry topic</option>
+						<option value="support">Video Player / Technical Streaming Issue</option>
+						<option value="content">Missing Episode or Show Request</option>
+						<option value="feedback">General User Feedback & Suggestions</option>
+						<option value="business">Advertising / Partnership Inquiries</option>
+						<option value="other">Other Inquiry</option>
+					</select>
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-white mb-2" for="message">
+						Message Details
+					</label>
+					<textarea
+						id="message"
+						name="message"
+						rows="5"
+						required
+						class="w-full px-4 py-3 bg-ink-700/70 border border-ink-600 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition resize-none"
+						placeholder="Please describe how we can assist you..."
+					></textarea>
+				</div>
+				<div class="flex items-center justify-center pt-2">
+					<Button type="submit" variant="primary" size="lg">
+						Send Message
+					</Button>
+				</div>
+			</form>
+
+			<script>
+				const form = document.getElementById('contact-form') as HTMLFormElement | null;
+				const successBox = document.getElementById('contact-success');
+				if (form && successBox) {
+					form.addEventListener('submit', (e) => {
+						e.preventDefault();
+						form.classList.add('hidden');
+						successBox.classList.remove('hidden');
+					});
+				}
+			</script>
+
+			<!-- Ad slot -->
+			<div class="mt-12">
+				<AdSlot
+					id="contact-page-ad"
+					label="Contact Page Banner"
+					placement="between-lists"
+					width="max-w-3xl mx-auto"
+				/>
+			</div>
+		</div>
+	</section>
+</Layout>

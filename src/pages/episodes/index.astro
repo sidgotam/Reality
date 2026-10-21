@@ -1,0 +1,112 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EpisodeCard from '../../components/ui/EpisodeCard.astro';
+import AdSlot from '../../components/ui/AdSlot.astro';
+import { getCollection } from 'astro:content';
+
+const allEpisodes = await getCollection('episodes');
+const allShows = await getCollection('shows');
+
+const showFilter = Astro.url.searchParams.get('show') || 'all';
+
+// Sort newest first
+const sortedEpisodes = [...allEpisodes].sort(
+	(a, b) => new Date(b.data.releaseDate).getTime() - new Date(a.data.releaseDate).getTime()
+);
+
+const filteredEpisodes = showFilter === 'all'
+	? sortedEpisodes
+	: sortedEpisodes.filter((ep) => ep.data.showSlug === showFilter);
+---
+
+<Layout
+	title="All Reality TV Episodes - RealityStream"
+	description="Watch the latest full episodes of Bigg Boss, MTV Roadies, Splitsvilla, and top Indian reality shows."
+>
+	<section class="py-12 sm:py-16 bg-ink-soft/20">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<!-- Header -->
+			<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 pb-6 border-b border-ink-700/60">
+				<div>
+					<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/15 text-brand-orange text-xs font-semibold mb-3 border border-brand-orange/30">
+						<span>🎬 Episode Guide</span>
+					</div>
+					<h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-display">
+						Latest & Archived Episodes
+					</h1>
+					<p class="text-white/60 text-base sm:text-lg mt-2 max-w-xl">
+						Never miss an elimination, task, or drama. Catch up on all recent broadcasts in HD.
+					</p>
+				</div>
+			</div>
+
+			<!-- Show Filter Pills -->
+			<div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+				<a
+					href="/episodes"
+					class={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
+						showFilter === 'all'
+							? 'bg-brand-orange text-black shadow-glow'
+							: 'bg-ink-700/60 text-white/70 hover:text-white hover:bg-ink-700'
+					}`}
+				>
+					All Shows ({sortedEpisodes.length})
+				</a>
+				{allShows.map((show) => {
+					const count = sortedEpisodes.filter((ep) => ep.data.showSlug === show.data.slug).length;
+					const active = showFilter === show.data.slug;
+					return (
+						<a
+							href={`/episodes?show=${show.data.slug}`}
+							class={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
+								active
+									? 'bg-brand-orange text-black shadow-glow'
+									: 'bg-ink-700/60 text-white/70 hover:text-white hover:bg-ink-700'
+							}`}
+						>
+							{show.data.name} ({count})
+						</a>
+					);
+				})}
+			</div>
+
+			<!-- Episodes Grid -->
+			{filteredEpisodes.length > 0 ? (
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+					{filteredEpisodes.map((episode) => (
+						<EpisodeCard
+							showSlug={episode.data.showSlug}
+							seasonSlug={episode.data.seasonSlug}
+							seasonNumber={episode.data.seasonNumber}
+							episodeNumber={episode.data.episodeNumber}
+							title={episode.data.title}
+							poster={episode.data.poster}
+							posterAlt={episode.data.posterAlt}
+							description={episode.data.description}
+							releaseDate={episode.data.releaseDate}
+							featured={episode.data.featured}
+						/>
+					))}
+				</div>
+			) : (
+				<div class="text-center py-20 bg-ink-soft/40 rounded-2xl border border-ink-700/60">
+					<p class="text-xl text-white/70 font-semibold mb-2">No episodes found</p>
+					<p class="text-sm text-white/50 mb-6">No episodes currently available for this show.</p>
+					<a href="/episodes" class="inline-flex px-5 py-2.5 rounded-lg bg-brand-orange text-black font-semibold text-sm">
+						View All Episodes
+					</a>
+				</div>
+			)}
+
+			<!-- Ad Banner -->
+			<div class="mt-16">
+				<AdSlot
+					id="episodes-archive-banner"
+					label="Episodes Catalog Banner"
+					placement="between-lists"
+					width="max-w-7xl mx-auto"
+				/>
+			</div>
+		</div>
+	</section>
+</Layout>

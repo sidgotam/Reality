@@ -1,0 +1,41 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ShowCard from '../ui/ShowCard.astro';
+
+interface Props {
+	shows: CollectionEntry<'shows'>[];
+}
+
+const { shows } = Astro.props as Props;
+---
+
+<section aria-labelledby="trending-heading" class="py-12 sm:py-16">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex items-center justify-between mb-8">
+			<div class="flex items-center gap-3">
+				<div class="w-2.5 h-8 bg-brand-orange rounded-full"></div>
+				<h2 id="trending-heading" class="text-2xl sm:text-3xl font-extrabold text-white font-display">
+					Trending Now
+				</h2>
+			</div>
+			<a href="/shows?filter=trending" class="text-sm text-brand-orange hover:text-brand-orange-soft transition font-semibold flex items-center gap-1 group">
+				<span>View All</span>
+				<span class="group-hover:translate-x-1 transition-transform">→</span>
+			</a>
+		</div>
+		<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+			{shows.map((show) => (
+				<ShowCard
+					slug={show.data.slug}
+					name={show.data.name}
+					poster={show.data.poster}
+					posterAlt={show.data.posterAlt}
+					description={show.data.description}
+					seasons={show.data.seasons}
+					trending={show.data.trending}
+					featured={show.data.featured}
+				/>
+			))}
+		</div>
+	</div>
+</section>

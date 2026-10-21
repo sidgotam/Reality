@@ -1,0 +1,23 @@
+---
+interface Props {
+	size?: 'sm' | 'md' | 'lg';
+	label?: string;
+	class?: string;
+}
+
+const { size = 'md', label = 'Loading...', class: className = '' } = Astro.props as Props;
+
+const sizes: Record<string, string> = {
+	sm: 'h-4 w-4',
+	md: 'h-8 w-8',
+	lg: 'h-12 w-12',
+};
+---
+
+<div class={`inline-flex flex-col items-center gap-2 text-white/70 ${className}`} role="status" aria-live="polite">
+	<svg class={`animate-spin ${sizes[size]}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+		<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
+		<path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z" />
+	</svg>
+	<span class="sr-only">{label}</span>
+</div>

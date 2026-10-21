@@ -1,0 +1,181 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import ShowCard from '../../components/ui/ShowCard.astro';
+import EpisodeCard from '../../components/ui/EpisodeCard.astro';
+import AdSlot from '../../components/ui/AdSlot.astro';
+
+export async function getStaticPaths() {
+	const shows = await getCollection('shows');
+	return shows.map((show) => ({
+		params: { slug: show.data.slug },
+		props: { show },
+	}));
+}
+
+const { show } = Astro.props;
+const { data: showData } = show;
+
+const seasons = (await getCollection('seasons', ({ data }) => data.showSlug === showData.slug))
+	.sort((a, b) => b.data.seasonNumber - a.data.seasonNumber);
+
+const latestEpisodes = (await getCollection('episodes', ({ data }) => data.showSlug === showData.slug))
+	.sort((a, b) => new Date(b.data.releaseDate).getTime() - new Date(a.data.releaseDate).getTime());
+---
+
+<Layout
+	title={`${showData.name} - Watch All Seasons & Episodes | RealityStream`}
+	description={`Watch all seasons and episodes of ${showData.name} in HD on RealityStream. ${showData.description}`}
+	ogImage={showData.poster}
+>
+	<!-- Hero Show Header -->
+	<section class="relative py-12 sm:py-16 bg-gradient-to-b from-ink-soft/60 to-ink">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<!-- Breadcrumb -->
+			<nav class="flex items-center gap-2 text-xs text-white/50 mb-8" aria-label="Breadcrumb">
+				<a href="/" class="hover:text-white transition">Home</a>
+				<span>/</span>
+				<a href="/shows" class="hover:text-white transition">Shows</a>
+				<span>/</span>
+				<span class="text-brand-orange font-semibold">{showData.name}</span>
+			</nav>
+
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-start">
+				<!-- Poster -->
+				<div class="md:col-span-4 lg:col-span-3">
+					<div class="aspect-[2/3] w-full rounded-2xl overflow-hidden shadow-2xl border border-ink-700/60 relative group">
+						<img
+							src={showData.poster}
+							alt={showData.posterAlt || `${showData.name} poster`}
+							class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+							loading="eager"
+						/>
+						<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+					</div>
+				</div>
+
+				<!-- Details & Overview -->
+				<div class="md:col-span-8 lg:col-span-9 space-y-6">
+					<div class="space-y-3">
+						<div class="flex flex-wrap items-center gap-2">
+							{showData.trending && (
+								<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-orange/20 text-brand-orange text-xs font-bold border border-brand-orange/40">
+									<span class="relative flex h-2 w-2">
+										<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
+										<span class="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
+									</span>
+									Trending Now
+								</span>
+							)}
+							{showData.featured && (
+								<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-red/20 text-brand-red text-xs font-bold border border-brand-red/40">
+									★ Featured
+								</span>
+							)}
+							<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-ink-700 text-white/70 text-xs font-medium border border-ink-600">
+								{showData.seasons} {showData.seasons === 1 ? 'Season' : 'Seasons'}
+							</span>
+						</div>
+
+						<h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-display">
+							{showData.name}
+						</h1>
+					</div>
+
+					<p class="text-white/80 text-base sm:text-lg leading-relaxed max-w-3xl">
+						{showData.description}
+					</p>
+
+					<!-- Quick Action Buttons -->
+					<div class="flex flex-wrap items-center gap-4 pt-2">
+						{latestEpisodes.length > 0 && (
+							<a
+								href={`/watch/${latestEpisodes[0].data.showSlug}-season-${latestEpisodes[0].data.seasonNumber}-episode-${latestEpisodes[0].data.episodeNumber}`}
+								class="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-brand-orange text-black font-bold text-base hover:bg-brand-orange-soft transition shadow-glow active:scale-95"
+							>
+								<svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+									<path d="M8 5v14l11-7z" />
+								</svg>
+								Watch Latest Episode (EP {latestEpisodes[0].data.episodeNumber})
+							</a>
+						)}
+						{seasons.length > 0 && (
+							<a
+								href={`/shows/${showData.slug}/${seasons[0].data.seasonSlug}`}
+								class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-ink-700/80 hover:bg-ink-700 text-white font-semibold text-base border border-ink-600 transition active:scale-95"
+							>
+								View Season {seasons[0].data.seasonNumber}
+							</a>
+						)}
+					</div>
+				</div>
+			</div>
+
+			<!-- Seasons Section -->
+			<div class="mt-16 pt-12 border-t border-ink-700/60">
+				<div class="flex items-center justify-between mb-8">
+					<h2 class="text-2xl sm:text-3xl font-bold text-white font-display">
+						Available Seasons
+					</h2>
+					<span class="text-xs text-white/50">{seasons.length} {seasons.length === 1 ? 'Season' : 'Seasons'}</span>
+				</div>
+
+				{seasons.length > 0 ? (
+					<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+						{seasons.map((season) => (
+							<ShowCard
+								slug={`${showData.slug}/${season.data.seasonSlug}`}
+								name={`${showData.name} Season ${season.data.seasonNumber}`}
+								poster={season.data.poster || showData.poster}
+								posterAlt={`${showData.name} Season ${season.data.seasonNumber}`}
+								description={season.data.description}
+								seasons={1}
+							/>
+						))}
+					</div>
+				) : (
+					<div class="text-center py-12 bg-ink-soft/30 rounded-xl border border-ink-700/50">
+						<p class="text-white/60">No seasons available for this show at the moment.</p>
+					</div>
+				)}
+			</div>
+
+			<!-- Episodes Section -->
+			{latestEpisodes.length > 0 && (
+				<div class="mt-16 pt-12 border-t border-ink-700/60">
+					<div class="flex items-center justify-between mb-8">
+						<h2 class="text-2xl sm:text-3xl font-bold text-white font-display">
+							Episodes ({latestEpisodes.length})
+						</h2>
+					</div>
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+						{latestEpisodes.map((episode) => (
+							<EpisodeCard
+								showSlug={episode.data.showSlug}
+								seasonSlug={episode.data.seasonSlug}
+								seasonNumber={episode.data.seasonNumber}
+								episodeNumber={episode.data.episodeNumber}
+								title={episode.data.title}
+								poster={episode.data.poster}
+								posterAlt={episode.data.posterAlt}
+								description={episode.data.description}
+								releaseDate={episode.data.releaseDate}
+								featured={episode.data.featured}
+							/>
+						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Ad slot -->
+			<div class="mt-16">
+				<AdSlot
+					id="show-detail-below-content"
+					label="Show Detail Banner"
+					placement="between-lists"
+					width="max-w-7xl mx-auto"
+				/>
+			</div>
+		</div>
+	</section>
+</Layout>

@@ -1,0 +1,43 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import EpisodeCard from '../ui/EpisodeCard.astro';
+
+interface Props {
+	episodes: CollectionEntry<'episodes'>[];
+}
+
+const { episodes } = Astro.props as Props;
+---
+
+<section aria-labelledby="latest-heading" class="py-12 sm:py-16 bg-ink-soft/40 border-y border-ink-700/50">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex items-center justify-between mb-8">
+			<div class="flex items-center gap-3">
+				<div class="w-2.5 h-8 bg-brand-red rounded-full"></div>
+				<h2 id="latest-heading" class="text-2xl sm:text-3xl font-extrabold text-white font-display">
+					Latest Episodes
+				</h2>
+			</div>
+			<a href="/episodes" class="text-sm text-brand-orange hover:text-brand-orange-soft transition font-semibold flex items-center gap-1 group">
+				<span>View All</span>
+				<span class="group-hover:translate-x-1 transition-transform">→</span>
+			</a>
+		</div>
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+			{episodes.map((episode) => (
+				<EpisodeCard
+					showSlug={episode.data.showSlug}
+					seasonSlug={episode.data.seasonSlug}
+					seasonNumber={episode.data.seasonNumber}
+					episodeNumber={episode.data.episodeNumber}
+					title={episode.data.title}
+					poster={episode.data.poster}
+					posterAlt={episode.data.posterAlt}
+					description={episode.data.description}
+					releaseDate={episode.data.releaseDate}
+					featured={episode.data.featured}
+				/>
+			))}
+		</div>
+	</div>
+</section>

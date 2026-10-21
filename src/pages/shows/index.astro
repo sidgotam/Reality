@@ -1,0 +1,110 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ShowCard from '../../components/ui/ShowCard.astro';
+import AdSlot from '../../components/ui/AdSlot.astro';
+import { getCollection } from 'astro:content';
+
+const allShows = await getCollection('shows');
+const filter = Astro.url.searchParams.get('filter') || Astro.url.searchParams.get('sort') || 'all';
+
+let filteredShows = [...allShows];
+if (filter === 'trending') {
+	filteredShows = allShows.filter((show) => show.data.trending);
+} else if (filter === 'featured') {
+	filteredShows = allShows.filter((show) => show.data.featured);
+}
+---
+
+<Layout
+	title="All Reality Shows - RealityStream"
+	description="Browse our complete collection of Indian reality shows including Bigg Boss, MTV Roadies, Splitsvilla, Indian Idol, and more."
+>
+	<section class="py-12 sm:py-16 bg-ink-soft/20">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<!-- Header & Filter Tabs -->
+			<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-ink-700/60">
+				<div>
+					<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/15 text-brand-orange text-xs font-semibold mb-3 border border-brand-orange/30">
+						<span>📺 Complete Catalog</span>
+					</div>
+					<h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-display">
+						Explore Reality Shows
+					</h1>
+					<p class="text-white/60 text-base sm:text-lg mt-2 max-w-xl">
+						Watch every drama, challenge, and romance. Filter through trending sensations or all-time favorites.
+					</p>
+				</div>
+
+				<!-- Filter Pills -->
+				<div class="flex items-center gap-2 bg-ink-700/50 p-1.5 rounded-xl border border-ink-600/60 self-start md:self-auto">
+					<a
+						href="/shows"
+						class={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+							filter === 'all'
+								? 'bg-brand-orange text-black shadow-glow'
+								: 'text-white/70 hover:text-white hover:bg-white/5'
+						}`}
+					>
+						All ({allShows.length})
+					</a>
+					<a
+						href="/shows?filter=trending"
+						class={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+							filter === 'trending'
+								? 'bg-brand-orange text-black shadow-glow'
+								: 'text-white/70 hover:text-white hover:bg-white/5'
+						}`}
+					>
+						🔥 Trending
+					</a>
+					<a
+						href="/shows?filter=featured"
+						class={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+							filter === 'featured'
+								? 'bg-brand-orange text-black shadow-glow'
+								: 'text-white/70 hover:text-white hover:bg-white/5'
+						}`}
+					>
+						★ Featured
+					</a>
+				</div>
+			</div>
+
+			<!-- Shows Grid -->
+			{filteredShows.length > 0 ? (
+				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
+					{filteredShows.map((show) => (
+						<ShowCard
+							slug={show.data.slug}
+							name={show.data.name}
+							poster={show.data.poster}
+							posterAlt={show.data.posterAlt}
+							description={show.data.description}
+							seasons={show.data.seasons}
+							trending={show.data.trending}
+							featured={show.data.featured}
+						/>
+					))}
+				</div>
+			) : (
+				<div class="text-center py-20 bg-ink-soft/40 rounded-2xl border border-ink-700/60">
+					<p class="text-xl text-white/70 font-semibold mb-2">No shows found</p>
+					<p class="text-sm text-white/50 mb-6">No shows matched the selected filter.</p>
+					<a href="/shows" class="inline-flex px-5 py-2.5 rounded-lg bg-brand-orange text-black font-semibold text-sm">
+						View All Shows
+					</a>
+				</div>
+			)}
+
+			<!-- Ad Banner -->
+			<div class="mt-16">
+				<AdSlot
+					id="shows-archive-banner"
+					label="Shows Catalog Banner"
+					placement="between-lists"
+					width="max-w-7xl mx-auto"
+				/>
+			</div>
+		</div>
+	</section>
+</Layout>

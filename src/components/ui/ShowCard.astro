@@ -1,0 +1,70 @@
+---
+interface Props {
+	slug: string;
+	name: string;
+	poster: string;
+	posterAlt?: string;
+	description?: string;
+	seasons?: number;
+	trending?: boolean;
+	featured?: boolean;
+	class?: string;
+}
+
+const {
+	slug,
+	name,
+	poster,
+	posterAlt = name,
+	description,
+	seasons,
+	trending,
+	featured,
+	class: className = '',
+} = Astro.props as Props;
+
+const href = slug.startsWith('/') ? slug : `/shows/${slug}`;
+---
+
+<a
+	href={href}
+	class={`group relative block overflow-hidden rounded-xl bg-ink-soft card-lift border border-ink-700/60 hover:border-brand-orange/60 ${className}`}
+	aria-label={`Watch ${name}`}
+>
+	<div class="aspect-[2/3] w-full overflow-hidden bg-ink-800">
+		<img
+			src={poster}
+			alt={posterAlt}
+			loading="lazy"
+			decoding="async"
+			class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+		/>
+	</div>
+	<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-90 transition group-hover:from-black">
+		<div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+			<h3 class="line-clamp-1 text-base font-bold text-white sm:text-lg group-hover:text-brand-orange transition-colors">
+				{name}
+			</h3>
+			{seasons ? (
+				<p class="text-xs text-brand-orange/90 font-medium mt-0.5">
+					{seasons} {seasons === 1 ? 'season' : 'seasons'}
+				</p>
+			) : null}
+			{description ? (
+				<p class="mt-1 line-clamp-2 hidden text-xs text-white/60 sm:block">
+					{description}
+				</p>
+			) : null}
+		</div>
+	</div>
+	{trending ? (
+		<span class="absolute left-2.5 top-2.5 rounded-md bg-brand-orange/95 px-2 py-0.5 text-[11px] font-extrabold text-black shadow-sm">
+			🔥 Trending
+		</span>
+	) : null}
+	{featured ? (
+		<span class="absolute right-2.5 top-2.5 rounded-md bg-brand-red/95 px-2 py-0.5 text-[11px] font-extrabold text-white shadow-sm">
+			★ Featured
+		</span>
+	) : null}
+</a>

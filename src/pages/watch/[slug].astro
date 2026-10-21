@@ -1,0 +1,296 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, getEntry } from 'astro:content';
+import VideoPlayer from '../../components/ui/VideoPlayer.astro';
+import EpisodeCard from '../../components/ui/EpisodeCard.astro';
+import AdSlot from '../../components/ui/AdSlot.astro';
+import { formatDate, buildVideoSources, resolvePoster, buildWatchSlug, canonicalUrl } from '../../utils/videoHelpers';
+
+export async function getStaticPaths() {
+	const episodes = await getCollection('episodes');
+	return episodes.map((episode) => ({
+		params: {
+			slug: `${episode.data.showSlug}-season-${episode.data.seasonNumber}-episode-${episode.data.episodeNumber}`,
+		},
+		props: { episode },
+	}));
+}
+
+const { slug } = Astro.params;
+const { episode } = Astro.props;
+const episodeData = episode.data;
+const { showSlug, seasonNumber, episodeNumber } = episodeData;
+
+let showEntry = await getEntry('shows', showSlug);
+if (!showEntry) {
+	const allShows = await getCollection('shows');
+	showEntry = allShows.find((s) => s.data.slug === showSlug);
+}
+const showData = showEntry?.data || {
+	name: episodeData.showName,
+	slug: showSlug,
+	poster: episodeData.poster,
+	description: '',
+	seasons: 1,
+	trending: false,
+	featured: false,
+};
+
+let seasonEntry = await getEntry('seasons', `${showSlug}-season-${seasonNumber}`);
+if (!seasonEntry) {
+	const allSeasons = await getCollection('seasons');
+	seasonEntry = allSeasons.find(
+		(s) => s.data.showSlug === showSlug && s.data.seasonNumber === seasonNumber
+	);
+}
+const seasonData = seasonEntry?.data || {
+	seasonNumber,
+	seasonSlug: `season-${seasonNumber}`,
+	showName: showData.name,
+	poster: showData.poster,
+	description: '',
+};
+
+// Get sorted episodes in this season
+const seasonEpisodes = (await getCollection(
+	'episodes',
+	({ data }) => data.showSlug === showSlug && data.seasonSlug === `season-${seasonNumber}`
+)).sort((a, b) => a.data.episodeNumber - b.data.episodeNumber);
+
+const currentIndex = seasonEpisodes.findIndex((ep) => ep.data.episodeNumber === episodeNumber);
+const prevEpisode = currentIndex > 0 ? seasonEpisodes[currentIndex - 1] : null;
+const nextEpisode = currentIndex >= 0 && currentIndex < seasonEpisodes.length - 1 ? seasonEpisodes[currentIndex + 1] : null;
+
+// Related episodes (other episodes from same show)
+const relatedEpisodes = seasonEpisodes.filter((ep) => ep.data.episodeNumber !== episodeNumber);
+
+// Build video sources
+const videoSources = buildVideoSources(episodeData.videoType, episodeData.videoUrl);
+const posterUrl = resolvePoster(episodeData.thumbnail ?? episodeData.poster);
+
+// Structured data for VideoObject
+let videoSchema: string | undefined = undefined;
+if (!episodeData.hideStructuredData && videoSources.length > 0) {
+	videoSchema = JSON.stringify({
+		'@context': 'https://schema.org',
+		'@type': 'VideoObject',
+		name: episodeData.title,
+		description: episodeData.description,
+		thumbnailUrl: [posterUrl],
+		uploadDate: new Date(episodeData.releaseDate).toISOString(),
+		duration: `PT${episodeData.duration ? Math.floor(episodeData.duration) * 60 : 3600}S`,
+		contentUrl: videoSources[0].url,
+		embedUrl: videoSources[0].url,
+		partOfSeries: {
+			'@type': 'TVSeries',
+			name: showData.name,
+		},
+		partOfSeason: {
+			'@type': 'TVSeason',
+			seasonNumber: seasonNumber,
+		},
+		episodeNumber: episodeNumber,
+	});
+}
+---
+
+<Layout
+	title={`${episodeData.title} | ${showData.name} S${seasonNumber}E${episodeNumber} - RealityStream`}
+	description={episodeData.description}
+	canonical={canonicalUrl(`/watch/${slug}`)}
+	ogImage={posterUrl}
+	schema={videoSchema}
+>
+	<section class="py-6 sm:py-10 bg-gradient-to-b from-ink-soft/40 to-ink">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<!-- Breadcrumb Navigation -->
+			<nav class="flex items-center gap-2 text-xs text-white/50 mb-6" aria-label="Breadcrumb">
+				<a href="/" class="hover:text-white transition">Home</a>
+				<span>/</span>
+				<a href="/shows" class="hover:text-white transition">Shows</a>
+				<span>/</span>
+				<a href={`/shows/${showSlug}`} class="hover:text-white transition">{showData.name}</a>
+				<span>/</span>
+				<a href={`/shows/${showSlug}/season-${seasonNumber}`} class="hover:text-white transition">Season {seasonNumber}</a>
+				<span>/</span>
+				<span class="text-brand-orange font-semibold">EP {episodeNumber}</span>
+			</nav>
+
+			<!-- Video Player -->
+			<div class="mb-8">
+				<VideoPlayer
+					sources={videoSources}
+					poster={posterUrl}
+					title={`${showData.name} - ${episodeData.title}`}
+				/>
+			</div>
+
+			<!-- Episode Controls & Meta -->
+			<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+				<div class="lg:col-span-8 space-y-6">
+					<div>
+						<!-- Badges -->
+						<div class="flex flex-wrap items-center gap-2 mb-3">
+							<a
+								href={`/shows/${showSlug}`}
+								class="px-3 py-1 rounded-full bg-brand-orange/20 text-brand-orange text-xs font-bold border border-brand-orange/40 hover:bg-brand-orange/30 transition"
+							>
+								{showData.name}
+							</a>
+							<span class="px-2.5 py-1 rounded-full bg-ink-700 text-white/70 text-xs font-medium border border-ink-600">
+								Season {seasonNumber} • Episode {episodeNumber}
+							</span>
+							<span class="px-2.5 py-1 rounded-full bg-ink-700 text-white/70 text-xs font-medium border border-ink-600">
+								{formatDate(episodeData.releaseDate)}
+							</span>
+							{episodeData.duration && (
+								<span class="px-2.5 py-1 rounded-full bg-ink-700 text-white/70 text-xs font-medium border border-ink-600">
+									⏱ {episodeData.duration} min
+								</span>
+							)}
+						</div>
+
+						<h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight font-display mb-3">
+							{episodeData.title}
+						</h1>
+
+						<p class="text-white/80 text-base sm:text-lg leading-relaxed">
+							{episodeData.description}
+						</p>
+					</div>
+
+					<!-- Prev / Next Navigation Controls -->
+					<div class="flex items-center justify-between gap-4 p-4 rounded-xl bg-ink-soft/70 border border-ink-700/60">
+						<div>
+							{prevEpisode ? (
+								<a
+									href={`/watch/${buildWatchSlug(prevEpisode.data.showSlug, prevEpisode.data.seasonNumber, prevEpisode.data.episodeNumber)}`}
+									class="inline-flex items-center gap-2 text-sm text-white/70 hover:text-brand-orange transition font-medium group"
+								>
+									<svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+									</svg>
+									<span>Previous (EP {prevEpisode.data.episodeNumber})</span>
+								</a>
+							) : (
+								<span class="text-xs text-white/30 inline-flex items-center gap-1">
+									First episode of season
+								</span>
+							)}
+						</div>
+
+						<div>
+							{nextEpisode ? (
+								<a
+									href={`/watch/${buildWatchSlug(nextEpisode.data.showSlug, nextEpisode.data.seasonNumber, nextEpisode.data.episodeNumber)}`}
+									class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-orange text-black text-sm font-bold hover:bg-brand-orange-soft transition shadow-glow group"
+								>
+									<span>Next Episode (EP {nextEpisode.data.episodeNumber})</span>
+									<svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+									</svg>
+								</a>
+							) : (
+								<span class="text-xs text-white/40">Latest episode reached</span>
+							)}
+						</div>
+					</div>
+				</div>
+
+				<!-- Sidebar / Quick Episode List -->
+				<div class="lg:col-span-4 bg-ink-soft/50 rounded-2xl p-5 border border-ink-700/60 space-y-4">
+					<div class="flex items-center justify-between pb-3 border-b border-ink-700/60">
+						<h3 class="text-base font-bold text-white font-display">
+							Season {seasonNumber} Episodes
+						</h3>
+						<span class="text-xs text-brand-orange font-semibold">
+							{seasonEpisodes.length} Episodes
+						</span>
+					</div>
+
+					<div class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+						{seasonEpisodes.map((ep) => {
+							const isCurrent = ep.data.episodeNumber === episodeNumber;
+							const epSlug = buildWatchSlug(ep.data.showSlug, ep.data.seasonNumber, ep.data.episodeNumber);
+							return (
+								<a
+									href={`/watch/${epSlug}`}
+									class={`flex items-center gap-3 p-2.5 rounded-xl transition ${
+										isCurrent
+											? 'bg-brand-orange/20 border border-brand-orange/50 text-white'
+											: 'hover:bg-ink-700/60 text-white/80 border border-transparent'
+									}`}
+								>
+									<div class="relative w-20 aspect-video rounded-lg overflow-hidden flex-shrink-0 bg-ink-800">
+										<img
+											src={ep.data.poster}
+											alt={ep.data.title}
+											class="w-full h-full object-cover"
+											loading="lazy"
+										/>
+										{isCurrent && (
+											<div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+												<span class="w-2 h-2 rounded-full bg-brand-orange animate-ping"></span>
+											</div>
+										)}
+									</div>
+									<div class="min-w-0 flex-1">
+										<div class="flex items-center gap-1.5 text-[11px] font-semibold text-brand-orange">
+											<span>EP {ep.data.episodeNumber}</span>
+											{isCurrent && <span class="text-white/60">• Playing</span>}
+										</div>
+										<p class="text-xs font-medium text-white truncate">{ep.data.title}</p>
+										<p class="text-[10px] text-white/50">{formatDate(ep.data.releaseDate)}</p>
+									</div>
+								</a>
+							);
+						})}
+					</div>
+				</div>
+			</div>
+
+			<!-- More Episodes from Show -->
+			{relatedEpisodes.length > 0 && (
+				<div class="mt-16 pt-12 border-t border-ink-700/60">
+					<div class="flex items-center justify-between mb-8">
+						<h2 class="text-2xl font-bold text-white font-display">
+							More from {showData.name}
+						</h2>
+						<a
+							href={`/shows/${showSlug}`}
+							class="text-sm text-brand-orange hover:text-brand-orange-soft transition font-medium"
+						>
+							View All in Show →
+						</a>
+					</div>
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+						{relatedEpisodes.slice(0, 4).map((ep) => (
+							<EpisodeCard
+								showSlug={ep.data.showSlug}
+								seasonSlug={ep.data.seasonSlug}
+								seasonNumber={ep.data.seasonNumber}
+								episodeNumber={ep.data.episodeNumber}
+								title={ep.data.title}
+								poster={ep.data.poster}
+								posterAlt={ep.data.posterAlt}
+								description={ep.data.description}
+								releaseDate={ep.data.releaseDate}
+								featured={false}
+							/>
+						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Ad slot -->
+			<div class="mt-16">
+				<AdSlot
+					id="watch-below-related"
+					label="Below Video Banner"
+					placement="between-lists"
+					width="max-w-7xl mx-auto"
+				/>
+			</div>
+		</div>
+	</section>
+</Layout>
