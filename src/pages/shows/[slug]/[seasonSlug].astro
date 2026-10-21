@@ -2,7 +2,6 @@
 import Layout from '../../../layouts/Layout.astro';
 import { getCollection, getEntry } from 'astro:content';
 import EpisodeCard from '../../../components/ui/EpisodeCard.astro';
-import AdSlot from '../../../components/ui/AdSlot.astro';
 
 export async function getStaticPaths() {
 	const seasons = await getCollection('seasons');
@@ -134,16 +133,6 @@ const episodes = (await getCollection(
 						<p class="text-sm text-white/50">Episodes for this season have not been uploaded yet.</p>
 					</div>
 				)}
-			</div>
-
-			<!-- Ad slot -->
-			<div class="mt-16">
-				<AdSlot
-					id="season-detail-below-content"
-					label="Season Detail Banner"
-					placement="between-lists"
-					width="max-w-7xl mx-auto"
-				/>
 			</div>
 		</div>
 	</section>

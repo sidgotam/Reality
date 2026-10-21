@@ -2,9 +2,9 @@
 import type { AdPlacement } from '../../utils/adHelpers';
 
 interface Props {
-	id: string;
-	label: string;
-	placement: AdPlacement;
+	id?: string;
+	label?: string;
+	placement?: AdPlacement;
 	width?: string;
 	className?: string;
 	class?: string;
@@ -12,53 +12,7 @@ interface Props {
 	mobileOnly?: boolean;
 	compact?: boolean;
 }
-
-const {
-	id,
-	label,
-	placement,
-	width = '',
-	className = '',
-	class: propClass = '',
-	desktopOnly = false,
-	mobileOnly = false,
-	compact = false,
-	...rest
-} = Astro.props as Props;
-
-// Only apply style="width: ..." if it looks like a CSS measurement (px, %, em, etc.), otherwise treat as tailwind class
-const isExplicitCssWidth = /^(auto|\d+(\.\d+)?(px|%|em|rem|vw|vh)|calc\(.+\))$/.test(width.trim());
-const inlineStyle = isExplicitCssWidth ? `width: ${width};` : undefined;
-const widthClass = isExplicitCssWidth ? '' : width;
-
-const placementLabel = placement
-	.split('-')
-	.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-	.join(' ');
-
-const containerClass = compact
-	? 'h-10 border-dashed border-ink-600 bg-ink-soft/30'
-	: 'ad-placeholder rounded-xl flex items-center justify-center p-4 text-center min-h-[80px] shadow-sm';
-
-const hiddenClasses = [
-	desktopOnly ? 'hidden lg:flex' : '',
-	mobileOnly ? 'lg:hidden flex' : '',
-].filter(Boolean).join(' ');
 ---
 
-<div
-	id={id}
-	class={[containerClass, hiddenClasses, widthClass, className, propClass].filter(Boolean).join(' ')}
-	style={inlineStyle}
-	{...rest}
->
-	<div class="flex flex-col items-center gap-1">
-		<span class="text-[11px] font-bold tracking-wider uppercase text-brand-orange/90 flex items-center gap-1.5">
-			<span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span>
-			Ad Space · {placementLabel}
-		</span>
-		<span class="text-xs text-white/40">
-			{compact ? 'Advertisement' : `Advertisement slot — ${label}`}
-		</span>
-	</div>
-</div>
+<!-- In-page ad space disabled in favor of popunder ad -->
+<slot />

@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import AdSlot from '../components/ui/AdSlot.astro';
 import { getCollection } from 'astro:content';
 
 const shows = await getCollection('shows');
@@ -129,16 +128,6 @@ const searchData = [
 				<button id="reset-search" class="px-5 py-2.5 rounded-lg bg-brand-orange text-black font-semibold text-sm">
 					Clear Search
 				</button>
-			</div>
-
-			<!-- Ad slot -->
-			<div class="mt-16">
-				<AdSlot
-					id="search-results-ad"
-					label="Search Results Banner"
-					placement="between-lists"
-					width="max-w-7xl mx-auto"
-				/>
 			</div>
 		</div>
 	</section>

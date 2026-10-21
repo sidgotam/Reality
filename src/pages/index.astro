@@ -4,7 +4,6 @@ import HeroSection from '../components/sections/HeroSection.astro';
 import TrendingShows from '../components/sections/TrendingShows.astro';
 import LatestEpisodes from '../components/sections/LatestEpisodes.astro';
 import PopularShows from '../components/sections/PopularShows.astro';
-import AdSlot from '../components/ui/AdSlot.astro';
 import { getCollection } from 'astro:content';
 
 const featuredShows = await getCollection('shows', ({ data }) => data.featured === true);
@@ -36,14 +35,4 @@ const latestEpisode = heroSlug
   {latestEpisodes.length > 0 && <LatestEpisodes episodes={latestEpisodes.slice(0, 8)} />}
 
   {popularShows.length > 0 && <PopularShows shows={popularShows} />}
-
-  <!-- Ad banner -->
-  <div class="py-12">
-    <AdSlot
-      id="homepage-below-fold"
-      label="Homepage Banner"
-      placement="between-lists"
-      width="max-w-7xl mx-auto"
-    />
-  </div>
 </Layout>

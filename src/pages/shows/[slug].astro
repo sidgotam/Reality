@@ -3,7 +3,6 @@ import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import ShowCard from '../../components/ui/ShowCard.astro';
 import EpisodeCard from '../../components/ui/EpisodeCard.astro';
-import AdSlot from '../../components/ui/AdSlot.astro';
 
 export async function getStaticPaths() {
 	const shows = await getCollection('shows');
@@ -166,16 +165,6 @@ const latestEpisodes = (await getCollection('episodes', ({ data }) => data.showS
 					</div>
 				</div>
 			)}
-
-			<!-- Ad slot -->
-			<div class="mt-16">
-				<AdSlot
-					id="show-detail-below-content"
-					label="Show Detail Banner"
-					placement="between-lists"
-					width="max-w-7xl mx-auto"
-				/>
-			</div>
 		</div>
 	</section>
 </Layout>

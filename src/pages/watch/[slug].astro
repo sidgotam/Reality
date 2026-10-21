@@ -3,7 +3,6 @@ import Layout from '../../layouts/Layout.astro';
 import { getCollection, getEntry } from 'astro:content';
 import VideoPlayer from '../../components/ui/VideoPlayer.astro';
 import EpisodeCard from '../../components/ui/EpisodeCard.astro';
-import AdSlot from '../../components/ui/AdSlot.astro';
 import { formatDate, buildVideoSources, resolvePoster, buildWatchSlug, canonicalUrl } from '../../utils/videoHelpers';
 
 export async function getStaticPaths() {
@@ -281,16 +280,6 @@ if (!episodeData.hideStructuredData && videoSources.length > 0) {
 					</div>
 				</div>
 			)}
-
-			<!-- Ad slot -->
-			<div class="mt-16">
-				<AdSlot
-					id="watch-below-related"
-					label="Below Video Banner"
-					placement="between-lists"
-					width="max-w-7xl mx-auto"
-				/>
-			</div>
 		</div>
 	</section>
 </Layout>

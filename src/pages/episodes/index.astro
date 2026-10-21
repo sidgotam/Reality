@@ -1,7 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import EpisodeCard from '../../components/ui/EpisodeCard.astro';
-import AdSlot from '../../components/ui/AdSlot.astro';
 import { getCollection } from 'astro:content';
 
 const allEpisodes = await getCollection('episodes');
@@ -97,16 +96,6 @@ const filteredEpisodes = showFilter === 'all'
 					</a>
 				</div>
 			)}
-
-			<!-- Ad Banner -->
-			<div class="mt-16">
-				<AdSlot
-					id="episodes-archive-banner"
-					label="Episodes Catalog Banner"
-					placement="between-lists"
-					width="max-w-7xl mx-auto"
-				/>
-			</div>
 		</div>
 	</section>
 </Layout>
